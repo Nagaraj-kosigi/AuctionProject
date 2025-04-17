@@ -1,0 +1,159 @@
+{% extends 'auctions/base.html' %}
+
+{% block title %}My Auctions - Online Auction{% endblock %}
+
+{% block content %}
+<h1>My Auctions</h1>
+
+<ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="my-listings-tab" data-bs-toggle="tab" data-bs-target="#my-listings" type="button" role="tab" aria-controls="my-listings" aria-selected="true">My Listings</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="active-bids-tab" data-bs-toggle="tab" data-bs-target="#active-bids" type="button" role="tab" aria-controls="active-bids" aria-selected="false">My Active Bids</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="won-auctions-tab" data-bs-toggle="tab" data-bs-target="#won-auctions" type="button" role="tab" aria-controls="won-auctions" aria-selected="false">Won Auctions</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="myTabContent">
+    <!-- My Listings Tab -->
+    <div class="tab-pane fade show active" id="my-listings" role="tabpanel" aria-labelledby="my-listings-tab">
+        {% if user_auctions %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Category</th>
+                        <th>Current Price</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for auction in user_auctions %}
+                    <tr>
+                        <td>{{ auction.title }}</td>
+                        <td>{{ auction.category.name }}</td>
+                        <td>${{ auction.current_price }}</td>
+                        <td>{{ auction.start_date|date:"M d, Y" }}</td>
+                        <td>{{ auction.end_date|date:"M d, Y" }}</td>
+                        <td>
+                            {% if auction.is_active and not auction.has_ended %}
+                            <span class="badge bg-success">Active</span>
+                            {% elif auction.is_active and auction.has_ended %}
+                            <span class="badge bg-warning">Ending</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Closed</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'auction_detail' auction.id %}" class="btn btn-sm btn-primary">View</a>
+
+                            {% if auction.is_active and not auction.has_ended %}
+        <a href="{% url 'edit_auction' auction.id %}" class="btn btn-sm btn-warning">Edit</a>
+        <form action="{% url 'delete_auction' auction.id %}" method="post" style="display:inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this auction?');">Cancel</button>
+        </form>
+    {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            You haven't created any auctions yet. <a href="{% url 'create_auction' %}" class="alert-link">Create one now</a>.
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- My Active Bids Tab -->
+    <div class="tab-pane fade" id="active-bids" role="tabpanel" aria-labelledby="active-bids-tab">
+        {% if active_bid_auctions %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Auction</th>
+                        <th>Current Price</th>
+                        <th>Your Highest Bid</th>
+                        <th>Status</th>
+                        <th>Ends</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in active_bid_auctions %}
+                    <tr>
+                        <td>{{ item.auction.title }}</td>
+                        <td>${{ item.auction.current_price }}</td>
+                        <td>${{ item.max_bid }}</td>
+                        <td>
+                            {% if item.is_highest %}
+                            <span class="badge bg-success">Highest Bid</span>
+                            {% else %}
+                            <span class="badge bg-danger">Outbid</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="timer" data-end-date="{{ item.auction.end_date|date:'c' }}">Loading...</span>
+                        </td>
+                        <td>
+                            <a href="{% url 'auction_detail' item.auction.id %}" class="btn btn-sm btn-primary">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            You don't have any active bids. <a href="{% url 'index' %}" class="alert-link">Find auctions to bid on</a>.
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- Won Auctions Tab -->
+    <div class="tab-pane fade" id="won-auctions" role="tabpanel" aria-labelledby="won-auctions-tab">
+        {% if won_auctions %}
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Auction</th>
+                        <th>Seller</th>
+                        <th>Final Price</th>
+                        <th>End Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for auction in won_auctions %}
+                    <tr>
+                        <td>{{ auction.title }}</td>
+                        <td>{{ auction.created_by.username }}</td>
+                        <td>${{ auction.current_price }}</td>
+                        <td>{{ auction.end_date|date:"M d, Y" }}</td>
+                        <td>
+                            <a href="{% url 'auction_detail' auction.id %}" class="btn btn-sm btn-primary">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="alert alert-info">
+            You haven't won any auctions yet.
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

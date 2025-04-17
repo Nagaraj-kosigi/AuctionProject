@@ -1,0 +1,111 @@
+{% extends 'auctions/base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ auction.title }} - Online Auction{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <h1>{{ auction.title }}</h1>
+        <p class="text-muted">
+            Listed by {{ auction.created_by.username }} in {{ auction.category.name }}
+            on {{ auction.start_date|date:"F j, Y" }}
+        </p>
+        
+        {% if auction.has_ended %}
+            {% if auction.winner %}
+            <div class="alert alert-success">
+                This auction has ended. The winner is {{ auction.winner.username }}.
+            </div>
+            {% else %}
+            <div class="alert alert-warning">
+                This auction has ended without any bids.
+            </div>
+            {% endif %}
+        {% else %}
+        <div class="alert alert-info">
+            <strong>Time Remaining:</strong>
+            <span class="timer" data-end-date="{{ auction.end_date|date:'c' }}">Loading...</span>
+        </div>
+        {% endif %}
+        
+        <div class="card mb-4">
+            {% if auction.image %}
+            <img src="{{ auction.image.url }}" class="card-img-top" alt="{{ auction.title }}">
+            {% else %}
+            <div class="bg-light text-center py-5">No Image Available</div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">Details</h5>
+                <p class="card-text">{{ auction.description|linebreaks }}</p>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Starting Price:</strong> ${{ auction.starting_price }}</p>
+                        <p><strong>Current Price:</strong> ${{ auction.current_price }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Start Date:</strong> {{ auction.start_date|date:"F j, Y, g:i a" }}</p>
+                        <p><strong>End Date:</strong> {{ auction.end_date|date:"F j, Y, g:i a" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Place a Bid</h5>
+            </div>
+            <div class="card-body">
+                {% if auction.has_ended %}
+                <p class="text-muted">This auction has ended.</p>
+                {% elif user.is_authenticated %}
+                    {% if user == auction.created_by %}
+                    <p class="text-muted">You cannot bid on your own auction.</p>
+                    {% else %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_amount" class="form-label">Bid Amount ($)</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" name="amount" step="0.01" min="{{ auction.current_price|add:'0.01' }}" id="id_amount" class="form-control" required>
+                            </div>
+                            <div class="form-text">
+                                Your bid must be higher than ${{ auction.current_price }}
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Place Bid</button>
+                    </form>
+                    {% endif %}
+                {% else %}
+                <p class="text-muted">You need to <a href="{% url 'login' %}">login</a> to place a bid.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Bid History</h5>
+            </div>
+            <div class="card-body">
+                {% if bids %}
+                <ul class="list-group">
+                    {% for bid in bids %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="fw-bold">${{ bid.amount }}</span> by {{ bid.bidder.username }}
+                        </div>
+                        <small class="text-muted">{{ bid.bid_time|date:"M d, g:i a" }}</small>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p class="text-muted">No bids yet. Be the first to bid!</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+[
+    {
+        "model": "auctions.category",
+        "pk": 1,
+        "fields": {
+            "name": "Electronics"
+        }
+    },
+    {
+        "model": "auctions.category",
+        "pk": 2,
+        "fields": {
+            "name": "Home & Garden"
+        }
+    },
+    {
+        "model": "auctions.category",
+        "pk": 3,
+        "fields": {
+            "name": "Fashion"
+        }
+    },
+    {
+        "model": "auctions.category",
+        "pk": 4,
+        "fields": {
+            "name": "Collectibles"
+        }
+    },
+    {
+        "model": "auctions.category",
+        "pk": 5,
+        "fields": {
+            "name": "Sports"
+        }
+    },
+    {
+        "model": "auctions.category",
+        "pk": 6,
+        "fields": {
+            "name": "Toys & Games"
+        }
+    },
+    {
+        "model": "auctions.category",
+        "pk": 7,
+        "fields": {
+            "name": "Art"
+        }
+    },
+    {
+        "model": "auctions.category",
+        "pk": 8,
+        "fields": {
+            "name": "Books & Media"
+        }
+    },
+    {
+        "model": "auctions.category",
+        "pk": 9,
+        "fields": {
+            "name": "Vehicles"
+        }
+    },
+    {
+        "model": "auctions.category",
+        "pk": 10,
+        "fields": {
+            "name": "Other"
+        }
+    }
+]
